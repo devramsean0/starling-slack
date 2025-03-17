@@ -14,7 +14,7 @@ receiver.router.use(express.json());
 
 receiver.router.post('/starling/feed-item', async (req, res) => {
     app.logger.info("Received a request");
-    const signature = req.headers['x-hook-signature'];
+/*    const signature = req.headers['x-hook-signature'];
     if (!signature) {
       app.logger.error('Missing hook signature');
       res.status(403).send('Missing hook signature');
@@ -31,11 +31,19 @@ receiver.router.post('/starling/feed-item', async (req, res) => {
       app.logger.error('Signature mismatch');
       res.status(403).send('Signature mismatch');
       return
-    }
+    } */
     res.status(200).send('OK');
     const content: IStarlingWebhookFeedItemContent = req.body.content;
     app.logger.info(`Transaction: ${content.amount.minorUnits / 100} ${content.amount.currency} from ${content.counterPartyName}`);
-    
+    let content = "";
+    switch (content.source) {
+      case "INTERNAL_TRANSFER":
+        content = `Transfer: ${content.direction == "IN" ? "to" : "from"} ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`
+      case "MASTER_CARD":
+        content = `${content.sourceSubType.toLocaleLowerCase()} card payment on ${content.spendingCategory} at ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`
+      default:
+        content = `${content.source} ${content.direction == "IN" ? "to" : "from"} ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`
+    }
     await app.client.chat.postMessage({
       channel: process.env.SLACK_CHANNEL || '',
       text: `${content.source.replaceAll("_", " ").toLocaleLowerCase()} ${content.direction == "IN" ? "to" : "from"} ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`,

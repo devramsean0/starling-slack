@@ -1,5 +1,6 @@
 import { App, ExpressReceiver } from '@slack/bolt';
 import express from 'express';
+import crypto from 'crypto';
 
 // Initializes your app with your bot token and signing secret
 
@@ -13,9 +14,28 @@ receiver.router.use(express.json());
 
 receiver.router.post('/starling/feed-item', async (req, res) => {
     app.logger.info("Received a request");
+    const signature = req.headers['x-hook-signature'];
+    if (!signature) {
+      app.logger.error('Missing hook signature');
+      res.status(403).send('Missing hook signature');
+      return
+    }
+
+    const body = JSON.stringify(req.body);
+    const verifier = crypto.createVerify('sha512');
+    verifier.update(body);
+    verifier.end();
+
+    const isVerified = verifier.verify(process.env.STARLING_WEBHOOK_KEY as string, signature as string, 'base64');
+    if (!isVerified) {
+      app.logger.error('Signature mismatch');
+      res.status(403).send('Signature mismatch');
+      return
+    }
     res.status(200).send('OK');
     const content: IStarlingWebhookFeedItemContent = req.body.content;
     app.logger.info(`Transaction: ${content.amount.minorUnits / 100} ${content.amount.currency} from ${content.counterPartyName}`);
+    
     await app.client.chat.postMessage({
       channel: process.env.SLACK_CHANNEL || '',
       text: `${content.source.replaceAll("_", " ").toLocaleLowerCase()} ${content.direction == "IN" ? "to" : "from"} ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`,

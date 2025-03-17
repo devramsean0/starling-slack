@@ -19,6 +19,8 @@ receiver.router.post('/starling/feed-item', async (req, res) => {
     await app.client.chat.postMessage({
       channel: process.env.SLACK_CHANNEL || '',
       text: `${content.source.replaceAll("_", " ").toLocaleLowerCase()} ${content.direction == "IN" ? "to" : "from"} ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`,
+      username: content.counterPartyName,
+      icon_url: "https://cdn.brandfetch.io/id65Uj_bLX/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B"
     })
 });
 

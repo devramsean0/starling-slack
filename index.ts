@@ -35,18 +35,18 @@ receiver.router.post('/starling/feed-item', async (req, res) => {
     res.status(200).send('OK');
     const content: IStarlingWebhookFeedItemContent = req.body.content;
     app.logger.info(`Transaction: ${content.amount.minorUnits / 100} ${content.amount.currency} from ${content.counterPartyName}`);
-    let content = "";
+    let msg_content = "";
     switch (content.source) {
       case "INTERNAL_TRANSFER":
-        content = `Transfer: ${content.direction == "IN" ? "to" : "from"} ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`
+        msg_content = `Transfer: ${content.direction == "IN" ? "to" : "from"} ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`
       case "MASTER_CARD":
-        content = `${content.sourceSubType.toLocaleLowerCase()} card payment on ${content.spendingCategory} at ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`
+        msg_content = `${content.sourceSubType.toLocaleLowerCase()} card payment on ${content.spendingCategory} at ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`
       default:
-        content = `${content.source} ${content.direction == "IN" ? "to" : "from"} ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`
+        msg_content = `${content.source} ${content.direction == "IN" ? "to" : "from"} ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`
     }
     await app.client.chat.postMessage({
       channel: process.env.SLACK_CHANNEL || '',
-      text: `${content.source.replaceAll("_", " ").toLocaleLowerCase()} ${content.direction == "IN" ? "to" : "from"} ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`,
+      text: msg_content,
       username: content.counterPartyName,
       icon_url: "https://cdn.brandfetch.io/id65Uj_bLX/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B"
     })

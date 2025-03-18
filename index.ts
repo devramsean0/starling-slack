@@ -39,8 +39,10 @@ receiver.router.post('/starling/feed-item', async (req, res) => {
     switch (content.source) {
       case "INTERNAL_TRANSFER":
         msg_content = `Transfer: ${content.direction == "IN" ? "to" : "from"} ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`
+      break;
       case "MASTER_CARD":
         msg_content = `${content.sourceSubType.toLocaleLowerCase()} card payment on ${content.spendingCategory} at ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`
+      break;
       default:
         msg_content = `${content.source} ${content.direction == "IN" ? "to" : "from"} ${content.counterPartyName} for ${content.amount.minorUnits / 100} ${content.amount.currency}`
     }

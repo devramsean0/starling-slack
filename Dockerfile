@@ -31,4 +31,4 @@ RUN ls
 # run the app
 USER bun
 EXPOSE 3000/tcp
-ENTRYPOINT ["DATABASE_URL=${DATABASE_URL}", "bun", "run", "start" ]
+ENTRYPOINT ["bun", "start" ]

@@ -4,12 +4,16 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "^1.2.8",
+    "drizzle-kit": "^0.30.6"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
-    "@slack/bolt": "^4.2.1"
+    "@libsql/client": "^0.15.1",
+    "@slack/bolt": "^4.2.1",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.41.0"
   }
 }

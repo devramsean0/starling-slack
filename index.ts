@@ -1,10 +1,13 @@
 import { App, ExpressReceiver } from '@slack/bolt';
 import express from 'express';
 import crypto from 'crypto';
+import { drizzle } from 'drizzle-orm/bun-sqlite';
+import { transactionTable } from './src/db/schema';
+import { eq } from 'drizzle-orm';
 
 // Initializes your app with your bot token and signing secret
 
-const receiver = new ExpressReceiver({ signingSecret: String(process.env.SLACK_SIGNING_SECRET) });
+const receiver = new ExpressReceiver({  signingSecret: String(process.env.SLACK_SIGNING_SECRET) });
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -12,8 +15,10 @@ const app = new App({
 });
 receiver.router.use(express.json());
 
+const db = drizzle(process.env.DATABASE_URL!)
+
 receiver.router.post('/starling/feed-item', async (req, res) => {
-    app.logger.info("Received a request");
+  app.logger.info("Received a request");
 /*    const signature = req.headers['x-hook-signature'];
     if (!signature) {
       app.logger.error('Missing hook signature');
@@ -32,8 +37,10 @@ receiver.router.post('/starling/feed-item', async (req, res) => {
       res.status(403).send('Signature mismatch');
       return
     } */
-    res.status(200).send('OK');
-    const content: IStarlingWebhookFeedItemContent = req.body.content;
+  res.status(200).send('OK');
+  const content: IStarlingWebhookFeedItemContent = req.body.content;
+  const existingTransaction = await db.select().from(transactionTable).where(eq(transactionTable.starling_id, content.feedItemUid));
+  if (!existingTransaction) {
     app.logger.info(`Transaction: ${content.amount.minorUnits / 100} ${content.amount.currency} from ${content.counterPartyName}`);
     let msg_content = "";
     switch (content.source) {
@@ -52,6 +59,12 @@ receiver.router.post('/starling/feed-item', async (req, res) => {
       username: content.counterPartyName,
       icon_url: "https://cdn.brandfetch.io/id65Uj_bLX/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B"
     })
+    app.logger.info(`Sent message to Slack: ${msg_content}`);
+    await db.insert(transactionTable).values({
+      starling_id: content.feedItemUid,
+    })
+    app.logger.info(`Inserted transaction into cache: ${content.feedItemUid}`);
+  }
 });
 
 (async () => {

@@ -19,9 +19,15 @@ FROM base AS prerelease
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
+FROM prerelease AS dbdev
+ENV DATABASE_URL="cache.db"
+# install dev dependencies
+RUN bunx --bun drizzle-kit migrate
+
 # copy production dependencies and source code into final image
-FROM base AS release
+FROM dbdev AS release
 COPY --from=install /temp/prod/node_modules node_modules
+COPY --from=DBDev /usr/src/app/cache.db cache.db
 COPY --from=prerelease /usr/src/app/ .
 
 # run the app

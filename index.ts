@@ -2,7 +2,7 @@ import { App, ExpressReceiver } from '@slack/bolt';
 import express from 'express';
 import crypto from 'crypto';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
-import { transactionTable } from './src/db/schema';
+import { transactionTable } from './src/db/schema.ts';
 import { eq } from 'drizzle-orm';
 
 // Initializes your app with your bot token and signing secret

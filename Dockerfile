@@ -23,14 +23,12 @@ COPY . .
 FROM prerelease AS release
 COPY --from=install /temp/prod/node_modules node_modules
 
-RUN ls
 COPY --from=prerelease /usr/src/app/ .
 RUN mkdir -p cache
 ENV DATABASE_URL="cache/cache.db"
-RUN bunx drizzle-kit migrate
 RUN ls
 
 # run the app
 USER bun
 EXPOSE 3000/tcp
-ENTRYPOINT [ "bun", "run", "index.ts" ]
+ENTRYPOINT ["bunx", "drizzle-kit", "migrate", "&&", "bun", "run", "index.ts" ]

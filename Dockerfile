@@ -23,7 +23,8 @@ COPY . .
 FROM prerelease AS release
 COPY --from=install /temp/prod/node_modules node_modules
 
-ENV DATABASE_URL="cache.db"
+RUN mkdir -p cache
+ENV DATABASE_URL="cache/cache.db"
 RUN bunx drizzle-kit migrate
 RUN ls
 COPY --from=prerelease /usr/src/app/ .

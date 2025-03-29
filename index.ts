@@ -40,7 +40,7 @@ receiver.router.post('/starling/feed-item', async (req, res) => {
   res.status(200).send('OK');
   const content: IStarlingWebhookFeedItemContent = req.body.content;
   const existingTransaction = await db.select().from(transactionTable).where(eq(transactionTable.starling_id, content.feedItemUid));
-  if (!existingTransaction) {
+  if (!existingTransaction.length) {
     app.logger.info(`Transaction: ${content.amount.minorUnits / 100} ${content.amount.currency} from ${content.counterPartyName}`);
     let msg_content = "";
     switch (content.source) {

@@ -25,8 +25,9 @@ COPY --from=install /temp/prod/node_modules node_modules
 
 ENV DATABASE_URL="cache.db"
 RUN bunx drizzle-kit migrate
-
+RUN ls
 COPY --from=prerelease /usr/src/app/ .
+RUN ls
 
 # run the app
 USER bun

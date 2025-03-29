@@ -10,6 +10,10 @@
   "peerDependencies": {
     "typescript": "^5"
   },
+  "scripts": {
+    "start": "bunx drizzle-kit generate && bun run index.ts"
+  } ,
+  
   "dependencies": {
     "@libsql/client": "^0.15.1",
     "@slack/bolt": "^4.2.1",

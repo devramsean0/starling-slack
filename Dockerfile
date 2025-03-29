@@ -31,4 +31,4 @@ RUN ls
 # run the app
 USER bun
 EXPOSE 3000/tcp
-ENTRYPOINT ["bunx", "drizzle-kit", "migrate", "&&", "bun", "run", "index.ts" ]
+ENTRYPOINT ["DATABASE_URL=${DATABASE_URL}", "bun", "run", "start" ]
